@@ -21,7 +21,8 @@ export const Link = TiptapLink.extend({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['a', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
+    return ['a', mergeAttributes(this.options.HTMLAttributes ?? {}, HTMLAttributes), 0];
+
   },
 
   addOptions() {

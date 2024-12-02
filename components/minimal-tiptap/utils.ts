@@ -12,9 +12,9 @@ export type FileError = {
 }
 
 export type FileValidationOptions = {
-  allowedMimeTypes: string[]
+  allowedMimeTypes: string[]; // Optional property
   maxFileSize?: number
-  allowBase64: boolean
+  allowBase64?: boolean
 }
 
 type FileInput = File | { src: string | File; alt?: string; title?: string }

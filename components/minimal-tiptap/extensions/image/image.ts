@@ -185,9 +185,9 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
         attrs =>
         ({ commands }) => {
           const [validImages, errors] = filterFiles(attrs, {
-            allowedMimeTypes: this.options.allowedMimeTypes,
+            allowedMimeTypes: this.options.allowedMimeTypes || [], // Fallback to an empty array
             maxFileSize: this.options.maxFileSize,
-            allowBase64: this.options.allowBase64
+            allowBase64: this.options.allowBase64,
           })
 
           if (errors.length > 0 && this.options.onValidationError) {
@@ -232,19 +232,19 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
 
       downloadImage: attrs => () => {
         const downloadFunc = this.options.downloadImage || downloadImage
-        void downloadFunc({ ...attrs, action: 'download' }, this.options)
+        
         return true
       },
 
       copyImage: attrs => () => {
         const copyImageFunc = this.options.copyImage || copyImage
-        void copyImageFunc({ ...attrs, action: 'copyImage' }, this.options)
+        
         return true
       },
 
       copyLink: attrs => () => {
         const copyLinkFunc = this.options.copyLink || copyLink
-        void copyLinkFunc({ ...attrs, action: 'copyLink' }, this.options)
+        
         return true
       },
 
@@ -253,13 +253,13 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
         ({ editor }) => {
           const input = document.createElement('input')
           input.type = 'file'
-          input.accept = this.options.allowedMimeTypes.join(',')
+          input.accept = (this.options.allowedMimeTypes ?? []).join(',');
           input.onchange = () => {
             const files = input.files
             if (!files) return
 
             const [validImages, errors] = filterFiles(Array.from(files), {
-              allowedMimeTypes: this.options.allowedMimeTypes,
+              allowedMimeTypes: this.options.allowedMimeTypes || [],
               maxFileSize: this.options.maxFileSize,
               allowBase64: this.options.allowBase64
             })
