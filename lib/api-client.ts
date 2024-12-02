@@ -1,7 +1,7 @@
 // frontend/lib/api-client.ts
 import axios from "axios";
 
-const API_BASE_URL = "https://cv-builder.up.railway.app/"; // Update with your backend URL
+const API_BASE_URL = "https://cv-builder-backend-production.up.railway.app"; // Update with your backend URL
 
 export const registerUser = async (data: { 
   full_name: string; 
