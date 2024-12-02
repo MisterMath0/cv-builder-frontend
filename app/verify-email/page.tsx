@@ -6,6 +6,8 @@ import { verifyEmail } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function VerifyEmail() {
   const searchParams = useSearchParams();
   const router = useRouter();

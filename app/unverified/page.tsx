@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+export const dynamic = 'force-dynamic';
+
+
 export default function UnverifiedEmail() {
   const router = useRouter();
   const searchParams = useSearchParams();
