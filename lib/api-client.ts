@@ -11,8 +11,7 @@ interface APIError {
     status: number;
   };
 }
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL; // Update with your backend URL
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cv-builder-backend-production.up.railway.app'; 
 
 export const registerUser = async (data: { 
   full_name: string; 
