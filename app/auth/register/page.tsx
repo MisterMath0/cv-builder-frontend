@@ -1,7 +1,7 @@
 // app/(auth)/register/page.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,7 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
-// Updated validation schema
+// Keep your existing schema
 const registerSchema = z.object({
   full_name: z.string()
     .min(2, { message: "Name must be at least 2 characters" })
@@ -45,6 +45,7 @@ export default function Register() {
   const router = useRouter();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const [serverError, setServerError] = useState<string>("");
   
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -63,23 +64,20 @@ export default function Register() {
   });
 
   const onSubmit = async (data: RegisterForm) => {
+    setServerError(""); // Clear any previous errors
     try {
-      const res = await registerUser(data);
+      await registerUser(data);
       
       toast({
         title: "Registration successful!",
-        description: "Please log in with your new account.",
+        description: "Please check your email to verify your account.",
         duration: 5000,
       });
-
-      router.push("/login");
+  
+      router.push(`/unverified?email=${encodeURIComponent(data.email)}`);
     } catch (err: any) {
-      toast({
-        title: "Registration failed",
-        description: err.response?.data?.detail || "An error occurred",
-        variant: "destructive",
-        duration: 5000,
-      });
+      const errorMessage = err.message || "Registration failed";
+      setServerError(errorMessage); // Only show error in the form
     }
   };
 
@@ -153,6 +151,10 @@ export default function Register() {
               </FormItem>
             )}
           />
+
+          {serverError && (
+            <div className="text-red-500 text-sm mt-2">{serverError}</div>
+          )}
 
           <Button 
             type="submit" 

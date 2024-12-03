@@ -78,7 +78,7 @@ export default function Login() {
   
       // Handle specific errors and display them below the form
       if (errorDetail === "Please verify your email first") {
-        router.push(`/auth/unverified?email=${encodeURIComponent(data.email)}`); // Redirect for unverified email
+        router.push(`/unverified?email=${encodeURIComponent(data.email)}`); // Redirect for unverified email
       } else {
         form.setError("email", { message: errorDetail }); // Show the error below the form field
       }

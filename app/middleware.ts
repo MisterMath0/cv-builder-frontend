@@ -33,5 +33,5 @@ export function middleware(request: NextRequest) {
 
 // Define the routes where the middleware will run
 export const config = {
-  matcher: ['/cv/:path*', '/auth-test', '/auth/login', '/auth/register'],
+  matcher: ['/cv/:path*', '/auth/login', '/auth/register'],
 };

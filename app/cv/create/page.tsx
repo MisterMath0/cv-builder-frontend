@@ -26,7 +26,11 @@ import {
 import { MinimalTiptapEditor } from '@/components/minimal-tiptap'
 import { previewCV, exportCV, saveCVDraft, createCV } from '@/lib/api-client'
 import { useToast } from "@/hooks/use-toast"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 
 interface ApiError {
   response?: {
@@ -119,7 +123,7 @@ const CVForm = () => {
         content: [{
           id: crypto.randomUUID(),
           name: '',
-          level: 'Intermediate'
+          level: ''
         }],
         order: 5
       },
@@ -178,92 +182,149 @@ const CVForm = () => {
       section.id === id ? { ...section, content: value } : section
     ))
   }
-  //preview
   const handlePreview = async () => {
     try {
-      setIsLoading(true)
-      const html = await previewCV(sections, 'professional') // Or your selected template
-      setPreviewHtml(html)
-      setPreviewOpen(true)
-    } catch (error: any) {
-      const errorMessage = (error as ApiError).response?.data?.detail || "Operation failed";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleExport = async (format: 'pdf' | 'docx') => {
-    try {
-      setIsLoading(true)
-      await exportCV(sections, 'professional', format)
-      toast({
-        title: "Export Successful",
-        description: `Your CV has been exported as ${format.toUpperCase()}`
-      })
-    } catch (error: any) {
-      const errorMessage = (error as ApiError).response?.data?.detail || "Operation failed";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  const handleCreateCV = async () => {
-    try {
       setIsLoading(true);
-      const response = await createCV('professional');
-      setCvId(response.id);
-    } catch (error) {
+      console.log('Starting preview with sections:', sections);
+      
+      // Format sections if needed
+      const formattedSections = sections.map((section, index) => ({
+        ...section,
+        order: index
+      }));
+      
+      const html = await previewCV(formattedSections, 'professional');
+      console.log('Preview HTML received');
+      setPreviewHtml(html);
+      setPreviewOpen(true);
+    } catch (error: any) {
+      console.error('Preview error:', error);
       toast({
-        title: "Error",
-        description: "Failed to create CV",
+        title: "Preview Failed",
+        description: error.response?.data?.detail || "Failed to generate preview",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Call createCV when component mounts
+  
+  const handleExport = async (format: 'pdf' | 'docx') => {
+    try {
+      setIsLoading(true);
+      console.log(`Starting ${format} export with sections:`, sections);
+      
+      // Ensure sections are properly formatted
+      const formattedSections = sections.map((section, index) => ({
+        ...section,
+        order: index,
+        content: section.type === 'text' ? section.content || '' : 
+                 section.type === 'languages' ? section.content || [] :
+                 section.content || {}
+      }));
+  
+      await exportCV(formattedSections, 'professional', format);
+      console.log('Export completed');
+      toast({
+        title: "Export Successful",
+        description: `Your CV has been exported as ${format.toUpperCase()}`
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Export failed",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleCreateCV = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Creating new CV with professional template and sections:', sections);
+      
+      // Format sections for API
+      const formattedSections = sections.map((section, index) => ({
+        type: section.type,
+        title: section.title,
+        content: section.content,
+        order_index: index
+      }));
+  
+      const response = await createCV('professional', formattedSections);
+      console.log('CV created with response:', response);
+      
+      if (response?.id) {
+        setCvId(response.id);
+        console.log('CV ID set:', response.id);
+        toast({
+          title: "Success",
+          description: "CV created successfully"
+        });
+      } else {
+        throw new Error('No CV ID in response');
+      }
+    } catch (error: any) {
+      console.error('Create CV error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create CV",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Call this when component mounts
   useEffect(() => {
     handleCreateCV();
   }, []);
-
+  
   const handleSaveDraft = async () => {
     if (!cvId) {
-      toast({
-        title: "Error",
-        description: "No CV created yet",
-        variant: "destructive"
-      });
-      return;
+      console.log('No CV ID found, creating new CV...');
+      await handleCreateCV();
+      if (!cvId) {
+        console.error('Failed to create CV ID');
+        toast({
+          title: "Error",
+          description: "No CV created yet",
+          variant: "destructive"
+        });
+        return;
+      }
     }
-
+  
     try {
       setIsLoading(true);
+      console.log('Saving draft for CV ID:', cvId, 'with sections:', sections);
       await saveCVDraft(cvId, sections, 'professional');
+      console.log('Draft saved successfully');
       toast({
         title: "Draft Saved",
         description: "Your CV draft has been saved"
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Save draft error:', error);
       toast({
         title: "Save Failed",
-        description: "Could not save CV draft",
+        description: error.response?.data?.detail || error.message || "Could not save CV draft",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+  
+  // Effect to create CV on component mount
+  useEffect(() => {
+    console.log('Component mounted, creating initial CV...');
+    handleCreateCV();
+  }, []);
 
   const formatText = (command: string) => {
     document.execCommand(command, false)
@@ -1231,14 +1292,15 @@ Soft Skills:
       </div>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[80vh]">
-          <iframe
-            srcDoc={previewHtml}
-            className="w-full h-full"
-            title="CV Preview"
-          />
-        </DialogContent>
-      </Dialog>
+  <DialogContent className="max-w-4xl h-[80vh]">
+    <DialogTitle className="sr-only">CV Preview</DialogTitle>
+    <iframe
+      srcDoc={previewHtml}
+      className="w-full h-full"
+      title="CV Preview"
+    />
+  </DialogContent>
+</Dialog>
          
             </div>
             {/* Photo Upload - Now spans 1 column and comes second */}
