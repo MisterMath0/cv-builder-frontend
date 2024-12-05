@@ -35,6 +35,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
   import { Switch } from "@/components/ui/switch"
+import { CardTitle } from "./ui/card";
 
   const menuItems = [
     {
@@ -82,7 +83,8 @@ import {
     return (
       <Sidebar>
         <SidebarHeader className="h-[80px] flex items-center px-6 border-b">
-          <h1 className="text-2xl font-bold">CV Builder</h1>
+        <img src="/favicon.ico" alt="Logo" className="w-20 h-20 mx-auto mb-2" />
+        <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">SMART CV BUILDER</CardTitle>
         </SidebarHeader>
   
         <SidebarContent>

@@ -43,6 +43,7 @@ export default function VerifyEmail() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen flex items-center justify-center">
+        
         <div className="max-w-md w-full mx-auto p-8 bg-white rounded-lg shadow-lg text-center space-y-6">
           {status === 'loading' && (
             <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />
