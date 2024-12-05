@@ -37,12 +37,7 @@ export const registerUser = async (data: {
 
 export const loginUser = async (data: { email: string; password: string }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
-    console.log("Complete response data:", response.data.data);
-    console.log("Access Token:", response.data.data.access_token);
-
-
-
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, data, { withCredentials: true });
     if (response.data.data.access_token) {
       const token = response.data.data.access_token;
       localStorage.setItem('access_token', response.data.data.access_token);
@@ -50,8 +45,6 @@ export const loginUser = async (data: { email: string; password: string }) => {
       
 
       document.cookie = `token=${token}; path=/; max-age=604800`;
-      console.log('Access Token stored:', token);
-      console.log('Refresh Token stored:', token);
     }
     return response;
   } catch (error: any) {
