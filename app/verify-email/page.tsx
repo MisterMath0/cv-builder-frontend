@@ -94,7 +94,7 @@ export default function VerifyEmail() {
 
           <div className="pt-6">
             <Button
-              onClick={() => router.push(status === 'success' ? '/auth/login' : '/auth/register')}
+              onClick={() => router.push(status === 'success' ? '/login' : '/auth/register')}
               className="w-full"
             >
               {status === 'success' ? 'Go to Login' : 'Back to Registration'}

@@ -1,13 +1,18 @@
-// frontend/app/cv/layout.tsx
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+'use client';
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function CVLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
+  
+
   return (
     <TooltipProvider>
       <SidebarProvider>
@@ -22,5 +27,5 @@ export default function CVLayout({
         </div>
       </SidebarProvider>
     </TooltipProvider>
-  )
+  );
 }

@@ -23,6 +23,7 @@ import {
   AlignCenter, 
   AlignRight 
 } from "lucide-react"
+import { CVStatus } from '@/lib/api-client';
 import { MinimalTiptapEditor } from '@/components/minimal-tiptap'
 import { previewCV, exportCV, saveCVDraft, createCV } from '@/lib/api-client'
 import { useToast } from "@/hooks/use-toast"
@@ -31,6 +32,15 @@ import {
   DialogContent, 
   DialogTitle 
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Save } from "lucide-react"; // Optional icon
+import { useRouter } from 'next/navigation'
+
 
 interface ApiError {
   response?: {
@@ -71,7 +81,56 @@ interface Education {
     name: string;
     level: string;
   }
+
+  // Types for validation
+interface ContactContent {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+}
+
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+
+// Validation function
+const validateCV = (sections: any[]): ValidationError[] => {
+  const errors: ValidationError[] = [];
+
+  sections.forEach((section) => {
+    if (section.type === 'contact') {
+      const content = section.content as ContactContent;
+      if (!content.name.trim()) {
+        errors.push({ field: 'name', message: 'Name is required' });
+      }
+      if (!content.email.trim()) {
+        errors.push({ field: 'email', message: 'Email is required' });
+      }
+      if (!content.phone.trim()) {
+        errors.push({ field: 'phone', message: 'Phone is required' });
+      }
+      if (!content.location.trim()) {
+        errors.push({ field: 'location', message: 'Location is required' });
+      }
+    }
+
+    // Add validation for other required fields
+    if (section.type === 'text' && (!section.content || section.content.trim() === '')) {
+      errors.push({ 
+        field: section.title, 
+        message: `${section.title} cannot be empty` 
+      });
+    }
+  });
+
+  return errors;
+};
+
 const CVForm = () => {
+  
   const [sections, setSections] = useState<Section[]>([
     { 
       id: 'contact',
@@ -140,7 +199,17 @@ const CVForm = () => {
   const [previewHtml, setPreviewHtml] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [draggedSection, setDraggedSection] = useState<string | null>(null)
+  const [lastSavedContent, setLastSavedContent] = useState<string>('');
+  const router = useRouter();
+  const isContentChanged = () => {
+  const currentContent = JSON.stringify(sections);
+  return currentContent !== lastSavedContent;
+  };
 
+  // Update lastSavedContent after successful save
+  const afterSuccessfulSave = () => {
+    setLastSavedContent(JSON.stringify(sections));
+  };
   const handleDragStart = (e: React.DragEvent, sectionId: string) => {
     setDraggedSection(sectionId)
     e.currentTarget.classList.add('opacity-50')
@@ -184,23 +253,27 @@ const CVForm = () => {
   }
   const handlePreview = async () => {
     try {
+      // Check validation before preview
+      const validationErrors = validateCV(sections);
+      if (validationErrors.length > 0) {
+        const errorMessages = validationErrors.map(err => `${err.field}: ${err.message}`);
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields before previewing",
+          variant: "destructive"
+        });
+        return;
+      }
+  
       setIsLoading(true);
       console.log('Starting preview with sections:', sections);
-      
-      // Format sections if needed
-      const formattedSections = sections.map((section, index) => ({
-        ...section,
-        order: index
-      }));
-      
-      const html = await previewCV(formattedSections, 'professional');
-      console.log('Preview HTML received');
+      const html = await previewCV(sections, 'professional');
       setPreviewHtml(html);
       setPreviewOpen(true);
     } catch (error: any) {
       console.error('Preview error:', error);
       toast({
-        title: "Preview Failed",
+        title: "Error",
         description: error.response?.data?.detail || "Failed to generate preview",
         variant: "destructive"
       });
@@ -209,21 +282,24 @@ const CVForm = () => {
     }
   };
   
+  
   const handleExport = async (format: 'pdf' | 'docx') => {
     try {
+      // Check validation before exporting
+      const validationErrors = validateCV(sections);
+      if (validationErrors.length > 0) {
+        const errorMessages = validationErrors.map(err => `${err.field}: ${err.message}`);
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields before exporting",
+          variant: "destructive"
+        });
+        return;
+      }
+  
       setIsLoading(true);
       console.log(`Starting ${format} export with sections:`, sections);
-      
-      // Ensure sections are properly formatted
-      const formattedSections = sections.map((section, index) => ({
-        ...section,
-        order: index,
-        content: section.type === 'text' ? section.content || '' : 
-                 section.type === 'languages' ? section.content || [] :
-                 section.content || {}
-      }));
-  
-      await exportCV(formattedSections, 'professional', format);
+      await exportCV(sections, 'professional', format);
       console.log('Export completed');
       toast({
         title: "Export Successful",
@@ -231,9 +307,10 @@ const CVForm = () => {
       });
     } catch (error: any) {
       console.error('Export error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || "Operation failed";
       toast({
         title: "Error",
-        description: error.message || "Export failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -242,49 +319,45 @@ const CVForm = () => {
   };
   
   const handleCreateCV = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Creating new CV with professional template and sections:', sections);
-      
-      // Format sections for API
-      const formattedSections = sections.map((section, index) => ({
-        type: section.type,
-        title: section.title,
-        content: section.content,
-        order_index: index
-      }));
+    if (!cvId) {  // Only create if no cvId exists
+      try {
+        setIsLoading(true);
+        const formattedSections = sections.map((section, index) => ({
+          type: section.type,
+          title: section.title,
+          content: section.content,
+          order_index: index
+        }));
   
-      const response = await createCV('professional', formattedSections);
-      console.log('CV created with response:', response);
-      
-      if (response?.id) {
-        setCvId(response.id);
-        console.log('CV ID set:', response.id);
-        toast({
-          title: "Success",
-          description: "CV created successfully"
-        });
-      } else {
-        throw new Error('No CV ID in response');
+        const response = await createCV('professional', formattedSections);
+        if (response?.id) {
+          setCvId(response.id);
+        }
+      } catch (error: any) {
+        console.error('Create CV error:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      console.error('Create CV error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create CV",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
   
-  // Call this when component mounts
   useEffect(() => {
-    handleCreateCV();
-  }, []);
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+  }, []); // Check auth once on mount
+
+  // Separate effect for CV creation
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token && !cvId) {
+      handleCreateCV();
+    }
+  }, [cvId]); // Only run when cvId changes
   
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (status: CVStatus) => {
     if (!cvId) {
       console.log('No CV ID found, creating new CV...');
       await handleCreateCV();
@@ -298,16 +371,39 @@ const CVForm = () => {
         return;
       }
     }
-  
+
     try {
       setIsLoading(true);
-      console.log('Saving draft for CV ID:', cvId, 'with sections:', sections);
-      await saveCVDraft(cvId, sections, 'professional');
-      console.log('Draft saved successfully');
-      toast({
-        title: "Draft Saved",
-        description: "Your CV draft has been saved"
-      });
+      // Validate before saving
+      const validationErrors = validateCV(sections);
+      if (validationErrors.length > 0) {
+        const errorMessages = validationErrors.map(err => `${err.field}: ${err.message}`);
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if there are actual changes to save
+      if (cvId && isContentChanged()) {  // You'll need to implement isContentChanged logic
+        console.log('Saving draft for CV ID:', cvId, 'with sections:', sections);
+        console.log(`Saving CV with status: ${status}`);
+        await saveCVDraft(cvId!, sections, 'professional', status);
+        afterSuccessfulSave();  
+        console.log('Draft saved successfully');
+        toast({
+          title: "Success",
+          description: `CV ${status === CVStatus.DRAFT ? 'saved as draft' : 'published'} successfully`
+        });
+      } else {
+        console.log('No changes detected, skipping save');
+        toast({
+          title: "Info",
+          description: "No changes to save"
+        });
+      }
     } catch (error: any) {
       console.error('Save draft error:', error);
       toast({
@@ -1264,31 +1360,73 @@ Soft Skills:
               ))}
             
             <div className="flex justify-end gap-4 mt-8">
-        <Button 
-          variant="outline" 
-          onClick={handleSaveDraft}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Save Draft"}
-        </Button>
-        <Button 
-          onClick={handlePreview}
-          disabled={isLoading}
-        >
-          {isLoading ? "Loading..." : "Preview CV"}
-        </Button>
-        <Button 
-          onClick={() => handleExport('pdf')}
-          disabled={isLoading}
-        >
-          Export PDF
-        </Button>
-        <Button 
-          onClick={() => handleExport('docx')}
-          disabled={isLoading}
-        >
-          Export Word
-        </Button>
+              {/* Validation Feedback */}
+            {(() => {
+              const errors = validateCV(sections);
+              return errors.length > 0 && (
+                <div className="bg-red-50 p-4 rounded-md mt-4 w-full mb-4">
+                  <h3 className="text-red-800 font-medium">Please fill in required fields:</h3>
+                  <ul className="list-disc pl-5 mt-2 text-red-700">
+                    {errors.map((error, index) => (
+                      <li key={index}>{error.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline"
+                  disabled={isLoading || validateCV(sections).length > 0}
+                  className="w-[150px]"
+                >
+                  {isLoading ? (
+                    "Saving..."
+                  ) : validateCV(sections).length > 0 ? (
+                    "Fill Required Fields"
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save CV
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  className="text-blue-600 focus:text-blue-600 focus:bg-blue-50"
+                  onClick={() => handleSaveDraft(CVStatus.PUBLISHED)}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Publish CV
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSaveDraft(CVStatus.DRAFT)}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save as Draft
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button 
+              onClick={handlePreview}
+              disabled={isLoading || validateCV(sections).length > 0}
+            >
+              {isLoading ? "Loading..." : "Preview CV"}
+            </Button>
+            <Button 
+              onClick={() => handleExport('pdf')}
+              disabled={isLoading || validateCV(sections).length > 0}
+            >
+              Export PDF
+            </Button>
+            <Button 
+              onClick={() => handleExport('docx')}
+              disabled={isLoading || validateCV(sections).length > 0}
+            >
+              Export Word
+            </Button>
       </div>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>

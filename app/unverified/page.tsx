@@ -95,7 +95,7 @@ export default function UnverifiedEmail() {
 
             <Button
               variant="outline"
-              onClick={() => router.push('/auth/login')}
+              onClick={() => router.push('/login')}
               className="w-full"
             >
               Back to Login

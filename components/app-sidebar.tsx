@@ -73,7 +73,6 @@ import {
     setLoading(true)
     try {
       await logoutUser();  // Call the logout function from the API client
-      router.push("/auth/login")  // Redirect to login page
     } catch (error) {
       console.error("Error during logout", error)
     } finally {

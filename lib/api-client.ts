@@ -1,6 +1,10 @@
 // frontend/lib/api-client.ts
 import axios from "axios";
 
+export enum CVStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published'
+}
 interface APIError {
   response: {
     data: {
@@ -31,17 +35,25 @@ export const registerUser = async (data: {
   }
 };
 
-export const loginUser = async (data: { 
-  email: string; 
-  password: string;
-}) => {
-  const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
-  if (response.data?.data?.access_token) {
-    localStorage.setItem('token', response.data.data.access_token);
+export const loginUser = async (data: { email: string; password: string }) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
+    console.log('Login response:', response.data?.data); // Debug
+
+    if (response.data?.data?.access_token) {
+      const token = response.data.data.access_token;
+      localStorage.setItem('access_token', token);
+      localStorage.setItem('refresh_token', response.data.data.refresh_token);
+      document.cookie = `token=${token}; path=/; max-age=604800`;
+      console.log('Token stored:', token.substring(0, 20)); // Debug
+    }
+    return response;
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.detail;
+    throw { message: errorMessage || 'Login failed' };
   }
-  
-  return response;
 };
+
 
 export const verifyEmail = async (token: string) => {
   return axios.get(`${API_BASE_URL}/auth/verify-email`, {
@@ -58,67 +70,96 @@ export const resendVerification = async (email: string) => {
     }
   });
 };
-// Modify logoutUser method to use Axios and remove token
+
 export const logoutUser = async () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    try {
-      // Send a POST request to the backend's logout endpoint
-      await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error("Logout failed", error);
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No token found');
     }
+
+    // Call logout endpoint
+    await axios.post(
+      `${API_BASE_URL}/auth/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    // Clear localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    
+    // Clear cookies
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+    // Redirect to login
+    window.location.href = '/login';
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Still clear tokens and redirect even if logout fails
+    localStorage.clear();
+    window.location.href = '/login';
   }
-  
-  // Remove token from localStorage after logout
-  localStorage.removeItem('token');
-  
 };
+
 
   // CV API calls
 interface CVData {
   cv_data: any;
   template_id: string;
 }
-// Create new CV
 export const createCV = async (templateId: string, sections: any[]) => {
   try {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('No authentication token');
+    await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
 
-    console.log('Creating CV with template and sections:', { templateId, sections });
     const response = await axios.post(`${API_BASE_URL}/api/cv`, { 
       template_id: templateId,
       sections: sections
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
     });
-    console.log('Create CV Response:', response.data);
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create CV error:', error);
     throw error;
   }
 };
 
-export const saveCVDraft = async (cvId: string, cvData: any, templateId: string) => {
+export const saveCVDraft = async (cvId: string, cvData: any, templateId: string, status: CVStatus) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) throw new Error('No authentication token');
 
-    console.log('Saving CV draft:', { cvId, cvData });
+    // Format sections for API
+    const formattedSections = cvData.map((section: any, index: number) => ({
+      type: section.type,
+      title: section.title,
+      content: section.content,
+      order_index: index
+    }));
+
+    console.log('Sending update request:', {
+      cvId,
+      template_id: templateId,
+      sections: formattedSections
+    });
+
     const response = await axios.put(`${API_BASE_URL}/api/cv/${cvId}`, {
-      cv_data: cvData,
-      template_id: templateId
+      template_id: templateId,
+      sections: formattedSections,
+      status: status
     }, {
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
     });
     return response.data;
@@ -130,7 +171,7 @@ export const saveCVDraft = async (cvId: string, cvData: any, templateId: string)
 
 export const previewCV = async (sections: any[], templateId: string) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) throw new Error('No authentication token');
 
     console.log('Sending preview request:', { sections, templateId });
@@ -160,7 +201,7 @@ export const previewCV = async (sections: any[], templateId: string) => {
 
 export const exportCV = async (sections: any[], templateId: string, format: 'pdf' | 'docx') => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) throw new Error('No authentication token');
 
     console.log('Exporting CV:', { sections, templateId, format });
@@ -204,7 +245,7 @@ export const exportCV = async (sections: any[], templateId: string, format: 'pdf
 
 // Get single CV
 export const getCV = async (cvId: string) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token');
   if (!token) throw new Error('No authentication token');
 
   return axios.get(`${API_BASE_URL}/api/cv/${cvId}`, {
@@ -213,17 +254,26 @@ export const getCV = async (cvId: string) => {
     }
   });
 };
-
-// Get all user's CVs
+//get all cvs
 export const getUserCVs = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token');
+  const token = localStorage.getItem('access_token'); // Make sure this matches your storage key
+  
+  if (!token) {
+    throw new Error('No authentication token');
+  }
 
-  return axios.get(`${API_BASE_URL}/api/cv`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  try {
+    // Remove the additional 'cvs' from the path
+    const response = await axios.get(`${API_BASE_URL}/api/cv`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching CVs:", error);
+    throw error;
+  }
 };
 
 // Update CV
@@ -240,7 +290,7 @@ export const updateCV = async (cvId: string, cvData: any) => {
 
 // Delete CV
 export const deleteCV = async (cvId: string) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token');
   if (!token) throw new Error('No authentication token');
 
   return axios.delete(`${API_BASE_URL}/api/cv/${cvId}`, {
@@ -250,9 +300,9 @@ export const deleteCV = async (cvId: string) => {
   });
 };
 
-// Add axios interceptor for token handling
+/// Add axios interceptor for token handling
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -269,12 +319,13 @@ axios.interceptors.response.use(
       const detail = error.response?.data?.detail;
       // Leave handling of specific cases (like unverified email) to the calling function
       if (detail !== "Please verify your email first") {
-        localStorage.removeItem("token"); // Clear token for general auth failures
+        localStorage.removeItem("access_token"); // Clear token for general auth failures
       }
     }
 
     return Promise.reject(error); // Propagate the error to be handled in `onSubmit`
   }
 );
+
 
 export default axios;

@@ -57,9 +57,9 @@ export default function Login() {
       const res = await loginUser(data);
   
       // Successful login: store token, update state, and redirect
-      localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("access_token", res.data.access_token);
       setAuth(res.data.user);
-      setCookie({ res }, 'token', res.data.access_token, {
+      setCookie({ res }, 'acess_token', res.data.access_token, {
         maxAge: 30 * 24 * 60 * 60, // Cookie expiry time (30 days)
         path: '/', // Make cookie accessible across the entire domain
         httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
@@ -147,7 +147,7 @@ export default function Login() {
 
           <div className="text-right">
             <Link 
-              href="/auth/forgot-password" 
+              href="/forgot-password" 
               className="text-sm text-primary hover:underline"
             >
               Forgot password?
@@ -167,7 +167,7 @@ export default function Login() {
       <div className="text-center space-y-4">
         <div className="text-sm">
           Don't have an account?{" "}
-          <Link href="/auth/register" className="text-primary hover:underline">
+          <Link href="/register" className="text-primary hover:underline">
             Create one here
           </Link>
         </div>
