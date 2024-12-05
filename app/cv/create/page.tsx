@@ -828,7 +828,8 @@ const CVForm = () => {
                                     )}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {exp.startDate ? format(exp.startDate, "MMM yyyy") : <span>Select date</span>}
+                                    {exp.startDate ? format(exp.startDate, "MMM yyyy") : <span className="text-sm">Select date</span>
+                                    }
                                 </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
@@ -870,7 +871,8 @@ const CVForm = () => {
                                     ? "Present" 
                                     : exp.endDate 
                                         ? format(exp.endDate, "MMM yyyy") 
-                                        : <span>Select date</span>
+                                        :<span className="text-sm">Select date</span>
+
                                     }
                                 </Button>
                                 </PopoverTrigger>
@@ -1057,7 +1059,8 @@ const CVForm = () => {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {edu.startDate ? format(edu.startDate, "MMM yyyy") : <span>Select date</span>}
+                  {edu.startDate ? format(edu.startDate, "MMM yyyy") : <span className="text-sm">Select date</span>
+                  }
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -1099,7 +1102,8 @@ const CVForm = () => {
                     ? "Present" 
                     : edu.endDate 
                       ? format(edu.endDate, "MMM yyyy") 
-                      : <span>Select date</span>
+                      : <span className="text-sm">Select date</span>
+
                   }
                 </Button>
               </PopoverTrigger>
@@ -1211,7 +1215,6 @@ const CVForm = () => {
     <div className="space-y-2">
       <Label>Skills</Label>
       <p className="text-sm text-muted-foreground">
-        Organize your skills using headings, lists, and sections. Feel free to use the formatting tools to structure your content.
       </p>
       <MinimalTiptapEditor
         value={section.content}
@@ -1221,14 +1224,13 @@ const CVForm = () => {
           ))
         }}
         placeholder={`Example structure:
-Technical Skills:
-• Frontend: React, TypeScript, Next.js
-• Backend: Node.js, Python, PostgreSQL
-• Tools: Git, Docker, AWS
-Soft Skills:
-• Team Leadership
-• Project Management
-• Problem Solving`}
+          Technical Skills:
+          • Frontend: React, TypeScript, Next.js
+          • Backend: Node.js, Python, PostgreSQL
+          Soft Skills:
+          • Team Leadership
+          • Project Management
+          `}
         editorContentClassName="p-4"
         className="min-h-[300px]"
       />
@@ -1337,26 +1339,28 @@ Soft Skills:
 )}
 {section.type === 'hobbies' && (
   <div className="space-y-4">
-    <div className="space-y-2">
+  <div className="space-y-2">
       <MinimalTiptapEditor
         value={section.content}
         onChange={(newContent) => {
-          setSections(prev => prev.map(s => 
-            s.id === section.id ? { ...s, content: newContent } : s
-          ))
+          setSections((prev) =>
+            prev.map((s) =>
+              s.id === section.id ? { ...s, content: newContent } : s
+            )
+          );
         }}
         placeholder={`Examples:
-• Playing chess and participating in local tournaments
-• Photography and digital art creation
-• Learning new programming languages and contributing to open-source projects
-• Playing basketball and volleyball
-• Reading science fiction and historical novels
-• Hiking and outdoor adventures`}
-        editorContentClassName="p-4"
-        className="min-h-[300px]"
-      />
-    </div>
+      • Playing chess and participating in local tournaments
+      • Photography and digital art creation
+      • Learning new programming languages and contributing to open-source projects
+      • Playing basketball 
+      `}
+            editorContentClassName="p-4 break-words"
+            className="min-h-[300px] w-full"
+          />
+        </div>
   </div>
+
 )}
                 </div>
               ))}
@@ -1376,12 +1380,13 @@ Soft Skills:
                 </div>
               );
             })()}
+          <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline"
                   disabled={isLoading || validateCV(sections).length > 0}
-                  className="w-[150px]"
+                  className="w-full md:w-[150px]"
                 >
                   {isLoading ? (
                     "Saving..."
@@ -1414,21 +1419,26 @@ Soft Skills:
             <Button 
               onClick={handlePreview}
               disabled={isLoading || validateCV(sections).length > 0}
+              className="w-full md:w-auto"
             >
               {isLoading ? "Loading..." : "Preview CV"}
             </Button>
             <Button 
               onClick={() => handleExport('pdf')}
               disabled={isLoading || validateCV(sections).length > 0}
+              className="w-full md:w-auto"
             >
               Export PDF
             </Button>
             <Button 
               onClick={() => handleExport('docx')}
               disabled={isLoading || validateCV(sections).length > 0}
+              className="w-full md:w-auto"
             >
               Export Word
             </Button>
+          </div>
+
       </div>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>

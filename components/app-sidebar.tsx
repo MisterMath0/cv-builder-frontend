@@ -82,9 +82,9 @@ import { CardTitle } from "./ui/card";
   }
     return (
       <Sidebar>
-        <SidebarHeader className="h-[80px] flex items-center px-6 border-b">
-        <img src="/favicon.ico" alt="Logo" className="w-20 h-20 mx-auto mb-2" />
-        <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">SMART CV BUILDER</CardTitle>
+        <SidebarHeader className="h-[100px] flex items-center px-6 border-b">
+        <img src="/favicon.ico" alt="Logo" className="w-12 h-12 mx-auto mb-2" />
+        <CardTitle className="text-sm font-bold text-gray-800 dark:text-white">SMART CV BUILDER</CardTitle>
         </SidebarHeader>
   
         <SidebarContent>
