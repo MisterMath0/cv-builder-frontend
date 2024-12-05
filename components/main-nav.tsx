@@ -30,8 +30,8 @@ export function MainNav() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-          <img src="/favicon.ico" alt="Logo" className="w-20 h-20 mx-auto mb-2" />
-          <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">SMART CV BUILDER</CardTitle>
+          <img src="/favicon.ico" alt="Logo" className="w-12 h-12 mx-auto mb-2" />
+            <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">CV Builder</CardTitle>
           </Link>
 
           {/* Hamburger Menu Toggle */}
