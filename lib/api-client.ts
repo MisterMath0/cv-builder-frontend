@@ -38,14 +38,20 @@ export const registerUser = async (data: {
 export const loginUser = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
-    console.log('Login response:', response.data?.data); // Debug
+    console.log("Complete response data:", response.data.data);
+    console.log("Access Token:", response.data.data.access_token);
 
-    if (response.data?.data?.access_token) {
+
+
+    if (response.data.data.access_token) {
       const token = response.data.data.access_token;
-      localStorage.setItem('access_token', token);
+      localStorage.setItem('access_token', response.data.data.access_token);
       localStorage.setItem('refresh_token', response.data.data.refresh_token);
+      
+
       document.cookie = `token=${token}; path=/; max-age=604800`;
-      console.log('Token stored:', token.substring(0, 20)); // Debug
+      console.log('Access Token stored:', token);
+      console.log('Refresh Token stored:', token);
     }
     return response;
   } catch (error: any) {
@@ -122,16 +128,25 @@ export const createCV = async (templateId: string, sections: any[]) => {
       throw new Error('No authentication token');
     }
 
-    const response = await axios.post(`${API_BASE_URL}/api/cv`, { 
-      template_id: templateId,
-      sections: sections
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/api/cv`, 
+      { 
+        template_id: templateId,
+        sections: sections
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('Create CV error:', error);
     throw error;
   }
 };
+
 
 export const saveCVDraft = async (cvId: string, cvData: any, templateId: string, status: CVStatus) => {
   try {

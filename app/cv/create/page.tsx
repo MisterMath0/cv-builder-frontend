@@ -334,20 +334,22 @@ const CVForm = () => {
           setCvId(response.id);
         }
       } catch (error: any) {
+        if (error.response) {
+          // If the error is an Axios error with a response
+        console.error('Create CV error response:', error.response);
+        console.error('Error status:', error.response.status);
+        console.error('Error details:', error.response.data);
+      }  else {
+        // Handle non-Axios errors
         console.error('Create CV error:', error);
-      } finally {
+      }
+    }
+      finally {
         setIsLoading(false);
       }
     }
   };
   
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-  }, []); // Check auth once on mount
 
   // Separate effect for CV creation
   useEffect(() => {
