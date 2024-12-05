@@ -49,8 +49,7 @@ export default function UnverifiedEmail() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen flex items-center justify-center">
-      <img src="/favicon.ico" alt="Logo" className="w-20 h-20 mx-auto mb-2" />
-      <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">SMART CV BUILDER</CardTitle>
+      
         <div className="max-w-md w-full mx-auto p-8 bg-white rounded-lg shadow-lg text-center space-y-6">
           <div className="h-12 w-12 mx-auto bg-yellow-100 rounded-full flex items-center justify-center">
             <svg
