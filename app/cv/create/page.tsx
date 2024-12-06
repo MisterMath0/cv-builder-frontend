@@ -375,14 +375,6 @@ const CVForm: React.FC<CVFormProps> = ({ isEditing = false, existingCvId, initia
     }
   };
   
-
-  // Separate effect for CV creation
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token && !cvId) {
-      handleCreateCV();
-    }
-  }, [cvId]); // Only run when cvId changes
   
   const handleSaveDraft = async (status: CVStatus) => {
     if (!cvId) {
