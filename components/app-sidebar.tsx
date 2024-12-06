@@ -45,7 +45,7 @@ import { CardTitle } from "./ui/card";
     },
     {
       title: "My CVs",
-      url: "/cv/list",
+      url: "/cv/cvs",
       icon: Files,
     },
     {

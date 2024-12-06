@@ -140,6 +140,20 @@ export const createCV = async (templateId: string, sections: any[]) => {
   }
 };
 
+export const uploadProfileImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const token = localStorage.getItem('access_token');
+  if (!token) throw new Error('No authentication token');
+
+  return axios.post(`${API_BASE_URL}/api/cv/upload-image`, formData, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
 
 export const saveCVDraft = async (cvId: string, cvData: any, templateId: string, status: CVStatus) => {
   try {
@@ -256,11 +270,18 @@ export const getCV = async (cvId: string) => {
   const token = localStorage.getItem('access_token');
   if (!token) throw new Error('No authentication token');
 
-  return axios.get(`${API_BASE_URL}/api/cv/${cvId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/cv/${cvId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    console.log('API Response:', response.data); // Debug log
+    return response;
+  } catch (error) {
+    console.error('getCV error:', error);
+    throw error;
+  }
 };
 //get all cvs
 export const getUserCVs = async () => {

@@ -95,6 +95,11 @@ interface ValidationError {
   message: string;
 }
 
+interface CVFormProps {
+  isEditing?: boolean;
+  existingCvId?: string;
+  initialData?: any;
+}
 
 // Validation function
 const validateCV = (sections: any[]): ValidationError[] => {
@@ -129,9 +134,9 @@ const validateCV = (sections: any[]): ValidationError[] => {
   return errors;
 };
 
-const CVForm = () => {
-  
-  const [sections, setSections] = useState<Section[]>([
+const CVForm: React.FC<CVFormProps> = ({ isEditing = false, existingCvId, initialData }) => {
+  const [cvId, setCvId] = useState<string | null>(existingCvId || null);
+  const [sections, setSections] = useState<Section[]>(initialData || [
     { 
       id: 'contact',
       title: 'Contact Information',
@@ -239,7 +244,7 @@ const CVForm = () => {
       setSections(newSections.sort((a, b) => a.order - b.order))
     }
   }
-  const [cvId, setCvId] = useState<string | null>(null);
+  
   const handleTitleEdit = (id: string, newTitle: string) => {
     setSections(prev => prev.map(section => 
       section.id === id ? { ...section, title: newTitle } : section
@@ -282,7 +287,25 @@ const CVForm = () => {
     }
   };
   
-  
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Error",
+          description: "Image must be less than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleExport = async (format: 'pdf' | 'docx') => {
     try {
       // Check validation before exporting
@@ -301,6 +324,8 @@ const CVForm = () => {
       console.log(`Starting ${format} export with sections:`, sections);
       await exportCV(sections, 'professional', format);
       console.log('Export completed');
+      localStorage.removeItem('cv-form-data')
+
       toast({
         title: "Export Successful",
         description: `Your CV has been exported as ${format.toUpperCase()}`
@@ -395,6 +420,8 @@ const CVForm = () => {
         await saveCVDraft(cvId!, sections, 'professional', status);
         afterSuccessfulSave();  
         console.log('Draft saved successfully');
+        localStorage.removeItem('cv-form-data')
+
         toast({
           title: "Success",
           description: `CV ${status === CVStatus.DRAFT ? 'saved as draft' : 'published'} successfully`
@@ -417,12 +444,41 @@ const CVForm = () => {
       setIsLoading(false);
     }
   };
-  
-  // Effect to create CV on component mount
-  useEffect(() => {
-    console.log('Component mounted, creating initial CV...');
-    handleCreateCV();
-  }, []);
+  // 1. Initial setup effect - runs once on mount
+    useEffect(() => {
+      if (!isEditing) {
+        console.log('Creating new CV...');
+        handleCreateCV();
+      }
+    }, [isEditing]);
+
+  // 2. Load data effect - runs once and handles both edit and create cases
+    useEffect(() => {
+      if (isEditing && initialData) {
+        // If editing, use the passed data from API
+        setSections(initialData);
+      } else {
+        // If creating new, try to load from localStorage
+        try {
+          const savedData = localStorage.getItem('cv-form-data')
+          if (savedData) {
+            setSections(JSON.parse(savedData))
+          }
+        } catch (error) {
+          console.error('Failed to load saved form data:', error)
+        }
+      }
+    }, [isEditing, initialData]);
+
+    // 3. Auto-save effect - only save to localStorage if not editing
+      useEffect(() => {
+        if (!isEditing) {
+          const timeoutId = setTimeout(() => {
+            localStorage.setItem('cv-form-data', JSON.stringify(sections))
+          }, 1000)
+          return () => clearTimeout(timeoutId)
+        }
+      }, [sections, isEditing]);
 
   const formatText = (command: string) => {
     document.execCommand(command, false)
@@ -1455,13 +1511,28 @@ const CVForm = () => {
             </div>
             {/* Photo Upload - Now spans 1 column and comes second */}
             <div className="lg:col-span-1 order-1 lg:order-2">
-      <div className="sticky top-6 flex flex-col items-center">
-        <div className="w-48 h-48 bg-secondary rounded-full flex items-center justify-center mb-4">
-          <Camera className="h-8 w-8" />
-        </div>
-        <Button>Upload Photo</Button>
-      </div>
-    </div>
+              <div className="sticky top-6 flex flex-col items-center">
+                <div className="w-48 h-48 bg-secondary rounded-full overflow-hidden flex items-center justify-center mb-4">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="h-8 w-8" />
+                  )}
+                </div>
+                <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="profile-upload"
+                    onChange={handleImageUpload}
+                  />
+                  <label htmlFor="profile-upload" className="inline-block">
+                    <Button onClick={() => document.getElementById('profile-upload')?.click()}>
+                      {imagePreview ? 'Change Photo' : 'Upload Photo'}
+                    </Button>
+                  </label>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

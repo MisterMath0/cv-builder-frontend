@@ -15,11 +15,20 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react"; // For hamburger and close icons
 import { CardTitle } from "./ui/card";
 
-const hideNavigationPaths = ['/login', '/register', '/cv/create', '/cv/list'];
+const hideNavigationPaths = ['/login', '/register'];
+const shouldHideNavigation = (pathname: string) => {
+    // Direct matches
+    if (hideNavigationPaths.includes(pathname)) return true;
+    
+    // Check if pathname starts with /cv/
+    if (pathname.startsWith('/cv/')) return true;
+    
+    return false;
+  };
 
 export function MainNav() {
   const pathname = usePathname();
-  const shouldShowNavigation = !hideNavigationPaths.includes(pathname);
+  const shouldShowNavigation = !shouldHideNavigation(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!shouldShowNavigation) return null;
