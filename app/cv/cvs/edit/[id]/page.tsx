@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getCV } from "@/lib/api-client";
-import CVForm from "@/app/cv/create/page";
+import CVForm from "@/components/CVForm";
 import { toast } from "@/hooks/use-toast";
 
 // EditCVPage.tsx
@@ -41,5 +41,5 @@ const EditCVPage = () => {
     console.log('Passing data to CVForm:', cvData); // Debug log
     return <CVForm isEditing={true} existingCvId={id as string} initialData={cvData} />;
   };
-  
+
 export default EditCVPage;
