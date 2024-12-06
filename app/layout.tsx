@@ -5,6 +5,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import { MainNav } from "@/components/main-nav";
 
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -29,7 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    
     <html lang="en">
+      <head>
+          {/* Favicon Link */}
+          <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <MainNav />
         <main className="flex-grow">

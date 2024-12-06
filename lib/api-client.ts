@@ -40,11 +40,13 @@ export const loginUser = async (data: { email: string; password: string }) => {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, data, { withCredentials: true });
     if (response.data.data.access_token) {
       const token = response.data.data.access_token;
+      const refreshToken = response.data.data.refresh_token
       localStorage.setItem('access_token', response.data.data.access_token);
       localStorage.setItem('refresh_token', response.data.data.refresh_token);
       
 
       document.cookie = `token=${token}; path=/; max-age=604800`;
+      document.cookie = `token=${refreshToken}; path=/; max-age=604800`;
     }
     return response;
   } catch (error: any) {

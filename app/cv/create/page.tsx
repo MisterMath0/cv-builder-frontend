@@ -445,12 +445,13 @@ const CVForm: React.FC<CVFormProps> = ({ isEditing = false, existingCvId, initia
     }
   };
   // 1. Initial setup effect - runs once on mount
-    useEffect(() => {
+    //Not needed function removed
+    /*useEffect(() => {
       if (!isEditing) {
         console.log('Creating new CV...');
         handleCreateCV();
       }
-    }, [isEditing]);
+    }, [isEditing]);*/
 
   // 2. Load data effect - runs once and handles both edit and create cases
     useEffect(() => {

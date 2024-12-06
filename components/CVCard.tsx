@@ -59,8 +59,8 @@ const CVCard: React.FC<CVCardProps> = ({ cv, onEdit, onPreview, onDownload, onDe
         <div className="text-sm text-gray-500 mb-4">
           Last updated: {new Date(cv.updated_at).toLocaleDateString()}
         </div>
-
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-rows-2 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           <Button 
             variant="outline" 
             size="sm"
@@ -70,15 +70,8 @@ const CVCard: React.FC<CVCardProps> = ({ cv, onEdit, onPreview, onDownload, onDe
             <Edit className="w-4 h-4 mr-2" />
             Edit
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPreview(cv)}
-            className="w-full"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
-          </Button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
           <Button
             variant="default"
             size="sm"
@@ -97,6 +90,7 @@ const CVCard: React.FC<CVCardProps> = ({ cv, onEdit, onPreview, onDownload, onDe
             <Trash className="w-4 h-4 mr-2" />
             Delete
           </Button>
+        </div>
         </div>
       </div>
     </motion.div>
