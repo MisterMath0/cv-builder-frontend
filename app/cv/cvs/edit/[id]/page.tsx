@@ -17,8 +17,14 @@ const EditCVPage = () => {
         try {
           setLoading(true);
           const response = await getCV(id as string);
-          console.log('CV Data from API:', response.data); // Debug log
-          setCvData(response.data.sections);
+
+          const formattedData = response.data.sections.map((section: any, index: number) => ({
+            ...section,
+            order: section.order_index // Map backend order_index to frontend order
+          }));
+
+
+          setCvData(formattedData);
           setLoading(false);
         } catch (error) {
           console.error('Failed to load CV:', error);

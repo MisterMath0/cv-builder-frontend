@@ -17,7 +17,6 @@ export interface CV {
   interface CVGridProps {
     cvs: CV[];
     onEdit: (id: string) => void;
-    onPreview: (cv: CV) => Promise<void>;
     onDownload: (cv: CV) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
   }
@@ -25,7 +24,6 @@ export interface CV {
 const CVGrid: React.FC<CVGridProps> = ({ 
   cvs, 
   onEdit, 
-  onPreview,
   onDownload, 
   onDelete 
 }) => {
@@ -46,7 +44,6 @@ const CVGrid: React.FC<CVGridProps> = ({
           key={cv.id}
           cv={cv}
           onEdit={onEdit}
-          onPreview={onPreview}
           onDownload={onDownload}
           onDelete={onDelete}
         />

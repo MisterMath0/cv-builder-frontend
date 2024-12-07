@@ -17,12 +17,11 @@ export interface CV {
   interface CVCardProps {
     cv: CV;
     onEdit: (id: string) => void;
-    onPreview: (cv: CV) => Promise<void>;
     onDownload: (cv: CV) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
   }
 
-const CVCard: React.FC<CVCardProps> = ({ cv, onEdit, onPreview, onDownload, onDelete }) => {
+const CVCard: React.FC<CVCardProps> = ({ cv, onEdit, onDownload, onDelete }) => {
   return (
     <motion.div
       className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300"

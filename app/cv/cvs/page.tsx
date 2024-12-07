@@ -67,19 +67,7 @@ const CVPage = () => {
     router.push(`/cv/cvs/edit/${id}`); // Match your folder structure
   };
 
-  const handlePreview = async (cv: CV) => {
-    try {
-      const html = await previewCV(cv.sections, cv.template_id);
-      setPreviewHtml(html);
-      setPreviewOpen(true);
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to generate preview",
-        variant: "destructive"
-      });
-    }
-  };
+
 
   const handleExport = async (cv: CV, format: 'pdf' | 'docx') => {
     try {
@@ -150,7 +138,6 @@ const CVPage = () => {
        <CVGrid
         cvs={cvs}
         onEdit={handleEdit}
-        onPreview={handlePreview}
         onDownload={handleDownload}
         onDelete={handleDelete}
      />

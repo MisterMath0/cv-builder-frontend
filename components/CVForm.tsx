@@ -24,7 +24,7 @@ import {
   AlignCenter, 
   AlignRight 
 } from "lucide-react"
-import { CVStatus } from '@/lib/api-client';
+import { CVStatus, uploadProfileImage } from '@/lib/api-client';
 import { MinimalTiptapEditor } from '@/components/minimal-tiptap'
 import { previewCV, exportCV, saveCVDraft, createCV } from '@/lib/api-client'
 import { CVFormProps } from '@/types/cv';
@@ -255,34 +255,31 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
   }
   const handlePreview = async () => {
     try {
-      // Check validation before preview
-      const validationErrors = validateCV(sections);
-      if (validationErrors.length > 0) {
-        const errorMessages = validationErrors.map(err => `${err.field}: ${err.message}`);
+      if (validateCV(sections).length > 0) {
         toast({
           title: "Validation Error",
-          description: "Please fill in all required fields before previewing",
+          description: "Please fill in all required fields",
           variant: "destructive"
         });
         return;
       }
   
       setIsLoading(true);
-      console.log('Starting preview with sections:', sections);
       const html = await previewCV(sections, 'professional');
+      console.log('Sending sections:', JSON.stringify(sections));
       setPreviewHtml(html);
       setPreviewOpen(true);
     } catch (error: any) {
-      console.error('Preview error:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.detail || "Failed to generate preview",
-        variant: "destructive"
+        console.error('Full error:', error);
+        toast({
+            title: "Error",
+            description: error.response?.data?.detail || "Failed to preview",
+            variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  };
+};
   
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -290,18 +287,41 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({
-          title: "Error",
-          description: "Image must be less than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "Error",
+                description: "Image must be less than 5MB",
+                variant: "destructive"
+            });
+            return;
+        }
+        try {
+            // Show immediate local preview
+            const localPreview = URL.createObjectURL(file);
+            setImagePreview(localPreview);
+            
+            setIsLoading(true);
+            const response = await uploadProfileImage(file);
+            
+            // Update with S3 URL after upload
+            setImagePreview(response.data.image_url);
+            toast({
+                title: "Success",
+                description: "Profile image uploaded successfully"
+            });
+        } catch (error) {
+            // Revert preview on error
+            setImagePreview(null);
+            toast({
+                title: "Error",
+                description: "Failed to upload image",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
     }
-  };
+};
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     try {

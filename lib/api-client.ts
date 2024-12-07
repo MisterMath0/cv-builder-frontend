@@ -93,6 +93,7 @@ export const logoutUser = async () => {
     // Clear localStorage
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('cv-form-data');
     
     // Clear cookies
     document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -198,7 +199,6 @@ export const previewCV = async (sections: any[], templateId: string) => {
     const token = localStorage.getItem('access_token');
     if (!token) throw new Error('No authentication token');
 
-    console.log('Sending preview request:', { sections, templateId });
     const formattedData = {
       cv_data: {
         sections: sections.map(section => ({
@@ -211,14 +211,13 @@ export const previewCV = async (sections: any[], templateId: string) => {
       template_id: templateId
     };
 
+
     const response = await axios.post(`${API_BASE_URL}/api/cv/preview`, formattedData, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
     return response.data.html;
   } catch (error: any) {
-    console.error('Preview error:', error.response?.data || error);
+    console.error('Preview error:', error?.response?.data || error);
     throw error;
   }
 };
