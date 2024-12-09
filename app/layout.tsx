@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Suspense } from "react";
-import { MainNav } from "@/components/main-nav";
+import { MainNav } from "@/components/home/main-nav";
 
 
 const geistSans = localFont({

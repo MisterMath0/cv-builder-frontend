@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Save } from "lucide-react"; // Optional icon
 import { useRouter } from 'next/navigation'
+import TemplateSelector from './template-selector';
 
 
 interface ApiError {
@@ -198,6 +199,7 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
   ])
   const { toast } = useToast()
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [currentTemplate, setCurrentTemplate] = useState('professional');
   const [previewHtml, setPreviewHtml] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [draggedSection, setDraggedSection] = useState<string | null>(null)
@@ -265,7 +267,8 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
       }
   
       setIsLoading(true);
-      const html = await previewCV(sections, 'professional');
+      const currentTemplate = localStorage.getItem('cv-template') || 'professional';
+      const html = await previewCV(sections, currentTemplate);
       console.log('Sending sections:', JSON.stringify(sections));
       setPreviewHtml(html);
       setPreviewOpen(true);
@@ -339,7 +342,8 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
   
       setIsLoading(true);
       console.log(`Starting ${format} export with sections:`, sections);
-      await exportCV(sections, 'professional', format);
+      const currentTemplate = localStorage.getItem('cv-template') || 'professional';
+      await exportCV(sections, currentTemplate, format);
       console.log('Export completed');
       localStorage.removeItem('cv-form-data')
 
@@ -370,8 +374,8 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
           content: section.content,
           order_index: index
         }));
-  
-        const response = await createCV('professional', formattedSections);
+        const currentTemplate = localStorage.getItem('cv-template') || 'professional';
+        const response = await createCV(currentTemplate, formattedSections);
         if (response?.id) {
           setCvId(response.id);
         }
@@ -424,9 +428,11 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
 
       // Check if there are actual changes to save
       if (cvId && isContentChanged()) {  // You'll need to implement isContentChanged logic
+        const currentTemplate = localStorage.getItem('cv-template') || 'professional';
+
         console.log('Saving draft for CV ID:', cvId, 'with sections:', sections);
         console.log(`Saving CV with status: ${status}`);
-        await saveCVDraft(cvId!, sections, 'professional', status);
+        await saveCVDraft(cvId!, sections, currentTemplate, status);
         afterSuccessfulSave();  
         console.log('Draft saved successfully');
         localStorage.removeItem('cv-form-data')
@@ -1447,6 +1453,13 @@ const CVForm = ({ isEditing = false, existingCvId, initialData }: CVFormProps) =
               );
             })()}
           <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+            
+            <TemplateSelector
+                onTemplateChange={(template) => {
+                    setCurrentTemplate(template);
+                    handlePreview();
+                }} 
+                />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 

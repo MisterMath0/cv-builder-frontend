@@ -330,6 +330,179 @@ export const deleteCV = async (cvId: string) => {
   });
 };
 
+//Cover letters Api Calls 
+export const generateCoverLetter = async (formData: any) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log('Generating cover letter with data:', formData);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/api/ai`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Cover letter generation successful:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error generating cover letter:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const saveCoverLetter = async (coverLetterData: any) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log('Saving cover letter:', coverLetterData);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/api/ai/save`,
+      coverLetterData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Cover letter saved successfully:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error saving cover letter:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const getAllCoverLetters = async () => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log('Fetching all cover letters');
+
+    const response = await axios.get(`${API_BASE_URL}/api/ai/letters`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log('Fetched cover letters:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching cover letters:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const getCoverLetterById = async (letterId: string) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log(`Fetching cover letter with ID: ${letterId}`);
+
+    const response = await axios.get(`${API_BASE_URL}/api/ai/letters/${letterId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log('Fetched cover letter:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching cover letter by ID:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const exportCoverLetter = async (letterId: string, format: 'pdf' | 'docx') => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log(`Exporting cover letter with ID: ${letterId} as ${format}`);
+
+    const response = await axios.get(
+      `${API_BASE_URL}/api/ai/letters/${letterId}/export/${format}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob',
+      }
+    );
+
+    const blob = new Blob([response.data], {
+      type: format === 'pdf' ? 'application/pdf' : 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cover_letter.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    console.log('Cover letter exported successfully');
+  } catch (error: any) {
+    console.error('Error exporting cover letter:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const getRemainingCredits = async () => {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token missing in localStorage');
+      throw new Error('No authentication token');
+    }
+
+    console.log('Fetching remaining credits');
+
+    const response = await axios.get(`${API_BASE_URL}/api/ai/credits`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log('Fetched remaining credits:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching remaining credits:', error.response?.data || error);
+    throw error;
+  }
+};
+
+
 /// Add axios interceptor for token handling
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');

@@ -1,10 +1,10 @@
 import React from 'react';
-import HeroSection from '@/components/hero-section';
-import FeaturesSection from "@/components/features-section";
-import HowItWorks from "@/components/how-it-works";
-import PricingSection from "@/components/pricing-section";
-import TestimonialsSection from "@/components/testimonials-section";
-import CTASection from "@/components/cta-section";
+import HeroSection from '@/components/home/hero-section';
+import FeaturesSection from "@/components/home/features-section";
+import HowItWorks from "@/components/home/how-it-works";
+import PricingSection from "@/components/home/pricing-section";
+import TestimonialsSection from "@/components/home/testimonials-section";
+import CTASection from "@/components/home/cta-section";
 
 export default function LandingPage() {
   return (

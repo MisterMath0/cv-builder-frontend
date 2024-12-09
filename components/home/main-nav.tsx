@@ -13,7 +13,7 @@ import {
 import { FileText } from "lucide-react";
 import { useState } from "react";
 import { Menu, X } from "lucide-react"; // For hamburger and close icons
-import { CardTitle } from "./ui/card";
+import { CardTitle } from "../ui/card";
 
 const hideNavigationPaths = ['/login', '/register'];
 const shouldHideNavigation = (pathname: string) => {

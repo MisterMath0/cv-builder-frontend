@@ -30,11 +30,11 @@ import { Switch } from "@/components/ui/switch";
 import { CardTitle } from "./ui/card";
 
 const menuItems = [
-  { title: "Templates", url: "/cv/templates", icon: LayoutTemplate },
+  { title: "Templates", url: "/templates", icon: LayoutTemplate },
   { title: "My CVs", url: "/cv/cvs", icon: Files },
-  { title: "Cover Letters", url: "/cv/cover-letters", icon: FileText },
-  { title: "AI Writer", url: "/cv/ai-writer", icon: PenTool },
-  { title: "Settings", url: "/cv/settings", icon: Settings },
+  { title: "Cover Letters", url: "/cover-letters", icon: FileText },
+  { title: "AI Writer", url: "/ai-writer", icon: PenTool },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
