@@ -10,12 +10,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 interface ContextGatheringProps {
-  onComplete: (data: {
+  onComplete: (data: { context: {
     style: string;
     tone: string;
     additionalContext: string;
     focusPoints: string[];
-  }) => void;
+  }}) => void;
 }
 
 export function ContextGathering({ onComplete }: ContextGatheringProps) {
@@ -107,12 +107,12 @@ export function ContextGathering({ onComplete }: ContextGatheringProps) {
           </div>
 
           <div className="flex justify-end mt-6">
-            <Button 
-              onClick={() => onComplete(context)}
-              variant="default"
-            >
-              Continue
-            </Button>
+          <Button 
+            onClick={() => onComplete({ context: context })}
+            variant="default"
+          >
+            Continue
+          </Button>
           </div>
         </CardContent>
       </Card>

@@ -437,7 +437,11 @@ export const getCoverLetterById = async (letterId: string) => {
   }
 };
 
-export const exportCoverLetter = async (letterId: string, format: 'pdf' | 'docx') => {
+export const exportCoverLetter = async (
+  letterId: string, 
+  format: 'pdf' | 'docx'
+): Promise<void> => {
+
   try {
     const token = localStorage.getItem('access_token');
     if (!token) {

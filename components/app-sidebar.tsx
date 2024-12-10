@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { CardTitle } from "./ui/card";
 
 const menuItems = [
   { title: "Templates", url: "/templates", icon: LayoutTemplate },
@@ -41,6 +40,7 @@ export function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname(); // Get current pathname
   const [loading, setLoading] = useState(false);
+  const [isHovered, setIsHovered] = useState(false); // State to track hover
 
   // Function to handle logout
   const handleLogout = async () => {
@@ -55,10 +55,14 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`transition-all duration-300 ${isHovered ? "w-64" : "w-16"} overflow-hidden`}
+    >
       <SidebarHeader className="h-[100px] flex items-center px-6 border-b">
         <FileText className="h-12 w-12 text-blue-600" />
-          <span className="font-bold text-xl">CV Builder</span>
+        {isHovered && <span className="font-bold text-xl ml-2">CV Builder</span>}
       </SidebarHeader>
 
       <SidebarContent>
@@ -69,7 +73,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <a href="/cv/create" className="bg-primary text-primary-foreground text-lg flex items-center">
                     <Plus className="w-6 h-6 mr-2" />
-                    <span>Create New CV</span>
+                    {isHovered && <span>Create New CV</span>}
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -80,12 +84,12 @@ export function AppSidebar() {
                       href={item.url}
                       className={`flex items-center text-lg px-3 py-2 rounded ${
                         pathname === item.url
-                          ? "text-black font-bold bg-gray-200" // Highlight current link
+                          ? "text-black font-bold bg-gray-200"
                           : "text-gray-700 hover:text-black hover:bg-gray-100"
                       }`}
                     >
-                      <item.icon className="w-6 h-6 mr-2" /> {/* Increase icon size */}
-                      <span>{item.title}</span>
+                      <item.icon className="w-6 h-6 mr-2" />
+                      {isHovered && <span>{item.title}</span>}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -100,7 +104,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton>
               <Switch />
-              <span className="text-lg">Theme</span>
+              {isHovered && <span className="text-lg ml-2">Theme</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -108,8 +112,8 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
                   <HelpCircle className="w-6 h-6 mr-2" />
-                  <span className="text-lg">Help</span>
-                  <ChevronUp className="ml-auto w-5 h-5" />
+                  {isHovered && <span className="text-lg">Help</span>}
+                  {isHovered && <ChevronUp className="ml-auto w-5 h-5" />}
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
@@ -128,7 +132,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout}>
               <LogOut className="w-6 h-6 mr-2" />
-              <span className="text-lg">{loading ? "Logging out..." : "Logout"}</span>
+              {isHovered && <span className="text-lg">{loading ? "Logging out..." : "Logout"}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

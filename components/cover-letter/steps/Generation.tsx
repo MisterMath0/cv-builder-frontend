@@ -4,15 +4,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import { useToast } from "@/hooks/use-toast";
 import { 
   Download,
   FileText, 
   Loader2, 
   Sparkles,
-  FileCheck
 } from "lucide-react";
 import {
   Dialog,
@@ -33,29 +32,53 @@ interface GenerationProps {
       additionalContext: string;
     };
   };
+  onGenerate: (content: string) => Promise<void>;
+  onExport: (letterId: string, format: 'pdf' | 'docx') => Promise<void>;
+  isLoading: boolean;
 }
 
-export function Generation({ formData }: GenerationProps) {
+export function Generation({ formData, onGenerate, onExport, isLoading }: GenerationProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [matchScore, setMatchScore] = useState(0);
+  const [letterId, setLetterId] = useState<string | null>(null);
   const { toast } = useToast();
-const handleContentChange = (newContent: any) => {
-    setGeneratedContent(newContent);
-  };
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'prose max-w-none min-h-[400px] p-4 focus:outline-none'
+      }
+    }
+  });
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      const data = await generateCoverLetter(formData);
-      setGeneratedContent(data.content);
-      setMatchScore(data.matching_score);
-    } catch (error) {
-      console.error(error);
+      const response = await generateCoverLetter(formData);
+      editor?.commands.setContent(response.content);
+      setMatchScore(response.matching_score);
+      setLetterId(response.id);
+      
+      await onGenerate(response.content);
+      
+      toast({
+        title: "Success",
+        description: "Cover letter generated successfully!"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate cover letter",
+        variant: "destructive"
+      });
     } finally {
       setIsGenerating(false);
     }
   };
+
 
   return (
     <motion.div
@@ -64,7 +87,6 @@ const handleContentChange = (newContent: any) => {
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      {/* Generation Card */}
       <Card>
         <CardHeader>
           <CardTitle>Generate Cover Letter</CardTitle>
@@ -73,7 +95,7 @@ const handleContentChange = (newContent: any) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!generatedContent ? (
+          {!editor?.getText() ? (
             <div className="text-center py-8">
               <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-medium mb-2">Ready to Generate</h3>
@@ -100,7 +122,6 @@ const handleContentChange = (newContent: any) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Match Score */}
               <div className="bg-muted p-4 rounded-lg flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Match Score</h4>
@@ -113,18 +134,12 @@ const handleContentChange = (newContent: any) => {
                 </div>
               </div>
 
-              {/* Editor */}
               <Card>
                 <CardContent className="p-4">
-                  <MinimalTiptapEditor
-                    value={generatedContent}
-                    onChange={handleContentChange}
-                    editorContentClassName="prose max-w-none min-h-[400px] p-4"
-                  />
+                  <EditorContent editor={editor} />
                 </CardContent>
               </Card>
 
-              {/* Actions */}
               <div className="flex justify-between">
                 <Button
                   variant="outline"
@@ -136,14 +151,26 @@ const handleContentChange = (newContent: any) => {
                 <div className="space-x-2">
                   <Button
                     variant="outline"
-                    onClick={() => handleGenerate()}
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
                   >
                     <Sparkles className="mr-2 h-4 w-4" />
                     Regenerate
                   </Button>
-                  <Button>
+                  <Button
+                    onClick={() => onExport(letterId!, 'pdf')}
+                    disabled={!letterId}
+                  >
                     <Download className="mr-2 h-4 w-4" />
-                    Export
+                    Export PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => onExport(letterId!, 'docx')}
+                    disabled={!letterId}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export DOCX
                   </Button>
                 </div>
               </div>
@@ -152,7 +179,6 @@ const handleContentChange = (newContent: any) => {
         </CardContent>
       </Card>
 
-      {/* Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-4xl h-[80vh]">
           <DialogHeader>
@@ -164,7 +190,7 @@ const handleContentChange = (newContent: any) => {
           <div className="flex-1 overflow-auto p-6 bg-white rounded-lg">
             <div 
               className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: generatedContent }}
+              dangerouslySetInnerHTML={{ __html: editor?.getHTML() || '' }}
             />
           </div>
         </DialogContent>
