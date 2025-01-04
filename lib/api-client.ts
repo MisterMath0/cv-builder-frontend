@@ -333,26 +333,37 @@ export const deleteCV = async (cvId: string) => {
 //Cover letters Api Calls 
 export const generateCoverLetter = async (formData: any) => {
   try {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      console.error('Token missing in localStorage');
-      throw new Error('No authentication token');
-    }
+    // Transform array of sections into a dictionary
+    const cvContentDict = formData.cvContent.reduce((acc: any, section: any) => {
+      acc[section.type] = section.content;
+      return acc;
+    }, {});
 
-    console.log('Generating cover letter with data:', formData);
+    const requestData = {
+      cv_id: formData.cvId,
+      cv_content: cvContentDict, // Now a dictionary
+      job_description: formData.jobDescription,
+      company_name: formData.companyName,
+      job_title: formData.jobTitle,
+      style: formData.context.style,
+      tone_preferences: [formData.context.tone],
+      additional_context: {
+        focus_points: formData.context.focusPoints,
+        custom_notes: formData.context.additionalContext
+      }
+    };
 
     const response = await axios.post(
       `${API_BASE_URL}/api/ai`,
-      formData,
+      requestData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
         },
       }
     );
 
-    console.log('Cover letter generation successful:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('Error generating cover letter:', error.response?.data || error);

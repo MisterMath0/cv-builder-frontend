@@ -1,0 +1,95 @@
+```
+└── 📁backend
+    └── 📁.git
+        └── 📁hooks
+            └── 
+    └── 📁app
+        └── 
+        └── 📁api
+            └── 📁__pycache__
+                └── 
+            └── __init__.py
+            └── auth.py
+            └── cover_letter.py
+            └── cv.py
+            └── preview.py
+            └── protected_route.py
+            └── sections.py
+            └── templates.py
+        └── 📁data
+            └── default_templates.py
+        └── 📁middleware
+            └── 📁__
+            └── auth.py
+            └── error_handler.py
+        └── 📁models
+            └── 📁__
+            └── __init__.py
+            └── ai_models.py
+            └── auth.py
+            └── cv.py
+            └── database.py
+            └── responses.py
+            └── section.py
+            └── templates.py
+            └── user.py
+        └── 📁scripts
+            └── init_templates.py
+        └── 📁services
+            └── 📁_
+            └── __init__.py
+            └── ai_service.py
+            └── cover_letter_export_service.py
+            └── cv_service.py
+            └── export_service.py
+            └── pdf_service.py
+            └── preview_service.py
+            └── section_service.py
+            └── storage_service.py
+            └── template_service.py
+        └── 📁templates
+            └── 📁cover_letters
+                └── basic.html
+            └── 📁cv
+                └── classic.html
+                └── modern.html
+                └── professional.html
+            └── 📁email
+                └── email_verification.html
+                └── password_reset.html
+        └── 📁utils
+            └── 📁__pycache__
+                └── 
+            └── __init__.py
+            └── auth.py
+            └── email.py
+            └── helpers.py
+            └── redis.py
+        └── __init__.py
+        └── .DS_Store
+        └── config.py
+        └── database.py
+        └── main.py
+    └── 📁tests
+        └── 📁__pycache__
+            └── 
+        └── __init.py
+        └── conftest.py
+        └── test_cv_service.py
+    └── 📁venv
+        └── 📁bin
+            └── 
+                    └── ttx.1
+        └── pyvenv.cfg
+    └── .dockerignore
+    └── .env
+    └── .gitignore
+    └── Dockerfile
+    └── pyproject.toml
+    └── pytest.ini
+    └── railway.toml
+    └── README.md
+    └── requirements.txt
+    └── setup.py
+    └── test.db
+```

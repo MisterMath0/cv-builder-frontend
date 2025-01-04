@@ -13,7 +13,8 @@ import {
   generateCoverLetter, 
   getRemainingCredits,
   saveCoverLetter,
-  exportCoverLetter
+  exportCoverLetter,
+  getCV
 } from "@/lib/api-client";
 
 export const steps = [
@@ -25,6 +26,7 @@ export const steps = [
 
 interface FormData {
   cvId: string | null;
+  cvContent: any[];  // Add this to store CV sections data
   jobDescription: string;
   jobUrl?: string;
   companyName?: string;
@@ -45,7 +47,11 @@ export default function CoverLetterBuilder() {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     cvId: null,
+    cvContent: [], // Initialize empty array for CV content
     jobDescription: "",
+    jobUrl: "", // Optional but good to initialize
+    companyName: "", // Optional but good to initialize
+    jobTitle: "", // Optional but good to initialize
     context: {
       style: "professional",
       tone: "formal",
@@ -72,15 +78,24 @@ export default function CoverLetterBuilder() {
   };
 
   const handleStepComplete = async (stepData: Partial<FormData>) => {
-    setFormData(prev => ({ ...prev, ...stepData }));
-    
-    if (step === 3 && credits <= 0) {
-      toast({
-        title: "Insufficient Credits",
-        description: "Please purchase more credits to generate cover letters",
-        variant: "destructive"
-      });
-      return;
+    if (stepData.cvId) {
+      try {
+        const response = await getCV(stepData.cvId);
+        setFormData(prev => ({ 
+          ...prev,
+          ...stepData,
+          cvContent: response.data.sections  // Store CV sections
+        }));
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load CV data",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else {
+      setFormData(prev => ({ ...prev, ...stepData }));
     }
     
     setStep(prev => prev + 1);
@@ -135,16 +150,20 @@ export default function CoverLetterBuilder() {
 
       {step === 1 && (
         <CVSelector 
-          onComplete={handleStepComplete}
+          onComplete={(data) => handleStepComplete(data)}
         />
       )}
-      
-      {step === 2 && (
+     
+     {step === 2 && (
         <JobDetails 
-          onComplete={handleStepComplete}
+          onComplete={(data) => handleStepComplete(data)}
+          previousData={{
+            cvId: formData.cvId,
+            cvContent: formData.cvContent
+          }}
         />
       )}
-      
+
       {step === 3 && (
         <ContextGathering 
           onComplete={handleStepComplete}

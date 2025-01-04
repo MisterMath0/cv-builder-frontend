@@ -7,18 +7,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getUserCVs } from "@/lib/api-client";
+import { getCV, getUserCVs } from "@/lib/api-client";
+
+interface CVData {
+  sections: {
+    type: string;
+    title: string;
+    content: any;
+  }[];
+  contact?: {
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+  };
+  }
 
 interface CV {
   id: string;
   title: string;
   created_at: string;
+  sections: any[];  // Add sections
+  template_id: string;
 }
 
 interface CVSelectorProps {
-  onComplete: (data: { cvId: string | null }) => void;
+  onComplete: (data: { 
+    cvId: string | null;
+    cvContent?: any[];  // Add CV content
+  }) => void;
 }
-
 export function CVSelector({ onComplete }: CVSelectorProps) {
   const [selectedCV, setSelectedCV] = useState<string | null>(null);
   const [savedCVs, setSavedCVs] = useState<CV[]>([]);
@@ -40,6 +58,25 @@ export function CVSelector({ onComplete }: CVSelectorProps) {
         title: "Error",
         description: "Failed to load your CVs",
         variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleCVSelect = async (cvId: string) => {
+    try {
+      setIsLoading(true);
+      const response = await getCV(cvId);
+      setSelectedCV(cvId);
+      onComplete({ 
+        cvId: cvId,
+        cvContent: response.data.sections  // Pass sections data
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load CV data",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -121,7 +158,7 @@ export function CVSelector({ onComplete }: CVSelectorProps) {
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
               ) : savedCVs.length > 0 ? (
-                <Select onValueChange={setSelectedCV} value={selectedCV ?? undefined}>
+                <Select onValueChange={handleCVSelect} value={selectedCV ?? undefined}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a CV" />
                   </SelectTrigger>

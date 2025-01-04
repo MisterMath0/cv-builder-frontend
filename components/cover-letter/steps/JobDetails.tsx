@@ -14,16 +14,30 @@ interface JobDetailsProps {
     jobUrl?: string;
     companyName?: string;
     jobTitle?: string;
+    cvContent?: any[];  // Add CV content from previous step
+    cvId?: string | null;
   }) => void;
+  previousData?: {  // Add previous data prop
+    cvId?: string | null;
+    cvContent?: any[];
+  };
 }
 
-export function JobDetails({ onComplete }: JobDetailsProps) {
+export function JobDetails({ onComplete, previousData }: JobDetailsProps) {
   const [jobDetails, setJobDetails] = useState({
     jobDescription: "",
     jobUrl: "",
     companyName: "",
     jobTitle: ""
   });
+
+  const handleSubmit = () => {
+    onComplete({
+      ...jobDetails,
+      cvId: previousData?.cvId,
+      cvContent: previousData?.cvContent
+    });
+  };
 
   return (
     <motion.div
@@ -100,12 +114,12 @@ export function JobDetails({ onComplete }: JobDetailsProps) {
           </Tabs>
 
           <div className="flex justify-end mt-6">
-            <Button 
-              onClick={() => onComplete(jobDetails)}
-              disabled={!jobDetails.jobDescription && !jobDetails.jobUrl}
-            >
-              Continue
-            </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={!jobDetails.jobDescription && !jobDetails.jobUrl}
+          >
+            Continue
+        </Button>
           </div>
         </CardContent>
       </Card>
