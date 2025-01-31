@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CV Builder Frontend
 
-## Getting Started
+## Description
+This is the frontend of the CV Builder app, hosted on Vercel. It allows users to create professional CVs using predefined templates, and export them as PDF or DOC files.
 
-First, run the development server:
+## How to Use the App
+1. **Visit the main page**:  
+   Go to [**CV Builder App**](https://cv-builder-frontend-six.vercel.app/) to start using the app.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Create an Account**:  
+   Navigate to the [**Registration Page**](https://cv-builder-frontend-six.vercel.app/register), sign up with your email, and complete your registration.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Email Verification**:  
+   After signing up, you will need to verify your email before you can log in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **Log In**:  
+   Once your email is verified, return to the main page and log in with your credentials.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. **Create Your CV**:  
+   Choose from predefined templates to build your CV. You can customize the details to match your professional experience.
 
-## Learn More
+6. **Export Your CV**:  
+   After generating your CV, export it as a PDF or DOC file for use in your job applications.
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies
+- Next.js
+- HTML/CSS
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
+- Deployed on **Vercel** for seamless hosting.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT
